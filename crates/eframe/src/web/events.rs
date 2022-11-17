@@ -190,6 +190,50 @@ pub fn install_document_events(runner_container: &mut AppRunnerContainer) -> Res
         },
     )?;
 
+    // moved from canvas
+    runner_container.add_event_listener(
+        &window,
+        "mouseup",
+        |event: web_sys::MouseEvent, mut runner_lock| {
+            if let Some(button) = button_from_mouse_event(&event) {
+                let pos = pos_from_mouse_event(runner_lock.canvas_id(), &event);
+                let modifiers = runner_lock.input.raw.modifiers;
+                runner_lock
+                    .input
+                    .raw
+                    .events
+                    .push(egui::Event::PointerButton {
+                        pos,
+                        button,
+                        pressed: false,
+                        modifiers,
+                    });
+                runner_lock.needs_repaint.repaint_asap();
+
+                text_agent::update_text_agent(runner_lock);
+            }
+            event.stop_propagation();
+            event.prevent_default();
+        },
+    )?;
+
+    // moved from canvas
+    runner_container.add_event_listener(
+        &window,
+        "mousemove",
+        |event: web_sys::MouseEvent, mut runner_lock| {
+            let pos = pos_from_mouse_event(runner_lock.canvas_id(), &event);
+            runner_lock
+                .input
+                .raw
+                .events
+                .push(egui::Event::PointerMoved(pos));
+            runner_lock.needs_repaint.repaint_asap();
+            event.stop_propagation();
+            event.prevent_default();
+        },
+    )?;
+
     Ok(())
 }
 
@@ -236,52 +280,10 @@ pub fn install_canvas_events(runner_container: &mut AppRunnerContainer) -> Resul
 
     runner_container.add_event_listener(
         &canvas,
-        "mousemove",
-        |event: web_sys::MouseEvent, mut runner_lock| {
-            let pos = pos_from_mouse_event(runner_lock.canvas_id(), &event);
-            runner_lock
-                .input
-                .raw
-                .events
-                .push(egui::Event::PointerMoved(pos));
-            runner_lock.needs_repaint.repaint_asap();
-            event.stop_propagation();
-            event.prevent_default();
-        },
-    )?;
-
-    runner_container.add_event_listener(
-        &canvas,
-        "mouseup",
-        |event: web_sys::MouseEvent, mut runner_lock| {
-            if let Some(button) = button_from_mouse_event(&event) {
-                let pos = pos_from_mouse_event(runner_lock.canvas_id(), &event);
-                let modifiers = runner_lock.input.raw.modifiers;
-                runner_lock
-                    .input
-                    .raw
-                    .events
-                    .push(egui::Event::PointerButton {
-                        pos,
-                        button,
-                        pressed: false,
-                        modifiers,
-                    });
-                runner_lock.needs_repaint.repaint_asap();
-
-                text_agent::update_text_agent(runner_lock);
-            }
-            event.stop_propagation();
-            event.prevent_default();
-        },
-    )?;
-
-    runner_container.add_event_listener(
-        &canvas,
         "mouseleave",
         |event: web_sys::MouseEvent, mut runner_lock| {
-            runner_lock.input.raw.events.push(egui::Event::PointerGone);
-            runner_lock.needs_repaint.repaint_asap();
+            //runner_lock.input.raw.events.push(egui::Event::PointerGone);
+            //runner_lock.needs_repaint.repaint_asap();
             event.stop_propagation();
             event.prevent_default();
         },
