@@ -282,8 +282,8 @@ pub fn install_canvas_events(runner_container: &mut AppRunnerContainer) -> Resul
         &canvas,
         "mouseleave",
         |event: web_sys::MouseEvent, mut runner_lock| {
-            //runner_lock.input.raw.events.push(egui::Event::PointerGone);
-            //runner_lock.needs_repaint.repaint_asap();
+            runner_lock.input.raw.events.push(egui::Event::PointerGone);
+            runner_lock.needs_repaint.repaint_asap();
             event.stop_propagation();
             event.prevent_default();
         },
